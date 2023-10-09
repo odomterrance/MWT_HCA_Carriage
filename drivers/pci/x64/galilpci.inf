@@ -1,0 +1,94 @@
+;______________________________________________________________________________
+[Version]               ;identifies the .INF file
+Signature               = "$Windows NT$" 
+Provider                = "Galil Motion Control" 
+Class                   = "Galil"
+ClassGUID               = {93C9B46D-5CB8-4381-B9DB-CE6E9665969C}
+DriverVer=02/23/2016,2.1.0.34
+CatalogFile             = galilpci.cat
+
+;______________________________________________________________________________
+[ClassInstall32]        ;defines a new class Galil in device manager
+AddReg                  = ClassInstall32_AddReg
+
+[ClassInstall32_AddReg]
+HKR,,    ,,"Galil"      ;class key, subkey, value-name, flags (data type = REG_SZ), value
+HKR,,Icon,,101
+
+;______________________________________________________________________________
+[SourceDisksNames]      ;identify the source disks of the installation package
+1                       = "Galil PCI device driver installation disk" ;name of disk 1
+
+;______________________________________________________________________________
+[SourceDisksFiles]      ;identify the files that are included in the installation package
+galilpci.sys      = 1 ;found on disk 1, directory optional
+WdfCoinstaller01011.dll = 1 ;found on disk 1, directory optional
+
+;______________________________________________________________________________
+[DestinationDirs]       ;specify the destination folder for the different CopyFiles sections.
+;                        all file actions that do not have a key in the DestinationDirs section
+;                        will be done in to DefaultDestDir.
+;                        WDM and WDF drivers have to go into %windir%\system32\drivers.  
+;                        %windir% has number 10. %windir%\system32 has number 11
+;10 = %windir%               where to put sys files (any file whose target directory isn't specified)
+DefaultDestDir          = 10, System32\drivers
+;11 = %windir%\system32      where to put WdfCoInstaller01005.dll (32-bit)
+CoInstaller_CopyFiles   = 11
+
+;______________________________________________________________________________
+[Manufacturer]          ;top level section for device installation. Contains the list of devices for which this INF file is meant
+"Galil"                 = DeviceList, ntamd64
+
+[DeviceList]            ;Specify the list of devices that are supported by our driver on x86
+"DMC-16x0"              = DriverInstall, PCI\VEN_10B5&DEV_9050&SUBSYS_16401079
+"DMC-18x0"              = DriverInstall, PCI\VEN_10B5&DEV_9050&SUBSYS_18001079
+"DMC-18x2"              = DriverInstall, PCI\VEN_10B5&DEV_9050&SUBSYS_18421079
+"DMC-18x6"              = DriverInstall, PCI\VEN_10B5&DEV_9050&SUBSYS_18061079
+"DMC-1417"              = DriverInstall, PCI\VEN_10B5&DEV_9050&SUBSYS_14171079
+
+[DeviceList.ntamd64]      ;Specify the list of devices that are supported by our driver on amd64
+"DMC-16x0"              = DriverInstall, PCI\VEN_10B5&DEV_9050&SUBSYS_16401079
+"DMC-18x0"              = DriverInstall, PCI\VEN_10B5&DEV_9050&SUBSYS_18001079
+"DMC-18x2"              = DriverInstall, PCI\VEN_10B5&DEV_9050&SUBSYS_18421079
+"DMC-18x6"              = DriverInstall, PCI\VEN_10B5&DEV_9050&SUBSYS_18061079
+"DMC-1417"              = DriverInstall, PCI\VEN_10B5&DEV_9050&SUBSYS_14171079
+
+;______________________________________________________________________________
+[DriverInstall]         ;DEVICE INSTALLATION (DDInstall)
+CopyFiles               = DriverCopyFiles ;sys file goes in c:\Windows\System32\drivers
+
+;______________________________________________________________________________
+[DriverCopyFiles]
+galilpci.sys,,,2 ;destination, source (if different), temporary (not used on >= Win2K), flags (2 = fail if file can't be copied)
+
+;______________________________________________________________________________
+[DriverInstall.Services] ;tell the PNP manager which file contains the entry point, and how it has to start.
+AddService              = galilpci, 2, DriverService         ;2 = function (as opposed to filter) driver
+
+;______________________________________________________________________________
+[DriverService]         ;how to load driver (these end up in the registry at HKLM\System\CurrentControlSet\Services)
+ServiceType             = 1                                        ;kernel mode driver
+StartType               = 3                                        ;start on demand
+ErrorControl            = 1                                        ;normal error handling (log errors but don't prevent system from starting)
+ServiceBinary           = %10%\system32\drivers\galilpci.sys ;location of sys file
+
+;______________________________________________________________________________
+[DriverInstall.CoInstallers]                     ;WDF COINSTALLER INSTALLATION SECTION OF DDInstall
+AddReg                  = CoInstaller_AddReg
+CopyFiles               = CoInstaller_CopyFiles  ;WdfCoInstaller01009.dll goes in C:\Windows\System32
+
+;______________________________________________________________________________
+[CoInstaller_AddReg]
+HKR,,CoInstallers32, 0x00010000, "WdfCoinstaller01011.dll,WdfCoInstaller" ;driver key, subkey, value-name, flags (data type), value
+
+;______________________________________________________________________________
+[CoInstaller_CopyFiles]      ;C:\WinDDK\6000\redist\wdf\x86
+WdfCoinstaller01011.dll,,,2	 ;destination, source (if different), temporary (not used on >= Win2K), flags (2 = fail if file can't be copied)
+
+;______________________________________________________________________________
+[DriverInstall.Wdf]
+KmdfService             = galilpci, galilpci_wdfsect
+
+;______________________________________________________________________________
+[galilpci_wdfsect]
+KmdfLibraryVersion      = 1.0
