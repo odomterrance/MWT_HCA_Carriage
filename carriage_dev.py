@@ -1,4 +1,3 @@
-# TODO: control sig figs & types
 # TODO: connect move function
 # TODO: connect emergency stop function
 # TODO: connect limits to move function
@@ -6,13 +5,14 @@
 # TODO: [OPTIONAL] create 'home' sidebar button that moves in order of z, y, x or selected order
 # TODO: [OPTIONAL] create 'set as home' sidebar button
 
-import tkinter as tk  # allows import and use of tkinter GUI modules
+import tkinter as tk  # module: allows import and use of tkinter GUI modules
 from tkinter import *  # imports all of tkinter's modules
-import customtkinter  # custom, pre-made theming applied to tkinter GUI's based on Windows 11
-import csv  # package for reading and writing to CSV (comma separated values) files
-import warnings  # package to suppress warnings that do not affect program functions
-import gclib  # package by Galil Motion to view, control, and otherwise interact with the carriage motion controls
-from varname import argname, UsingExecWarning  # package to use an argument's name as a reference
+import customtkinter  # package: custom, pre-made theming applied to tkinter's GUI based on Windows 11
+import csv  # module: reading and writing to CSV (comma separated values) files
+import warnings  # module: suppresses warnings that do not affect program functions
+import gclib  # wrapper: via Galil Motion to view, control, and otherwise interact with the carriage motion controls
+from varname import argname, UsingExecWarning  # package: use an argument's name as a reference
+from carriage_movement import main
 
 # suppresses warning from using argname in the move_axis and set_axis functions
 warnings.filterwarnings("ignore", category=UsingExecWarning)
@@ -35,9 +35,8 @@ class MoveCarriage(customtkinter.CTk):
         super().__init__()
 
         # - placeholder galil commands
-        galil = gclib.GalilCommands()
+        galil = gclib.py()
         print('gclib version:', galil.GVersion())
-        # self.print_to_log(galil.GVersion())
 
         # try:
         #     # - galil motion controller init and connection
@@ -98,7 +97,7 @@ class MoveCarriage(customtkinter.CTk):
         # -- left sidebar labels
         self.label_logo = customtkinter.CTkLabel(self.frame_sidebar, text="MWT Controls",
                                                  font=customtkinter.CTkFont(size=20, weight="bold"))
-        self.label_version = customtkinter.CTkLabel(self.frame_sidebar, text="Version 20230914 ",
+        self.label_version = customtkinter.CTkLabel(self.frame_sidebar, text="Version 20231010 ",
                                                     font=customtkinter.CTkFont(size=12, slant="italic"))
         self.label_appearance = customtkinter.CTkLabel(self.frame_sidebar, text="Appearance Mode:", anchor="w")
         # self.scaling_label = customtkinter.CTkLabel(self.frame_sidebar, text="UI Scaling:", anchor="w")
@@ -350,7 +349,7 @@ class MoveCarriage(customtkinter.CTk):
 
         # -- log events text fields
         self.textbox_log = customtkinter.CTkTextbox(self.tabview_config.tab("Log"), width=250, height=100)
-        # self.textbox_log.insert("0.0", "gclib version: " + gclib.GVersion(self))
+        self.textbox_log.insert("0.0", "gclib version: " + galil.GVersion())
 
         # -- log events button
         self.button_clear_log = customtkinter.CTkButton(self.tabview_config.tab("Log"), text='Clear',
@@ -606,14 +605,17 @@ class MoveCarriage(customtkinter.CTk):
             self.print_to_log("Moving to...")
             self.print_to_log(self.entry_x_target.get())
             self.set_axis(self, self.entry_x_actual_stored, move_target)
+            self.print_to_log(" done.")
         elif argname('move_target') == "entry_y_target_stored":
             self.print_to_log("Moving to...")
             self.print_to_log(self.entry_y_target.get())
             self.set_axis(self, self.entry_y_actual_stored, move_target)
+            self.print_to_log(" done.")
         elif argname('move_target') == "entry_z_target_stored":
             self.print_to_log("Moving to...")
             self.print_to_log(self.entry_z_target.get())
             self.set_axis(self, self.entry_z_actual_stored, move_target)
+            self.print_to_log(" done.")
         else:
             self.print_to_log("Error!")
 
